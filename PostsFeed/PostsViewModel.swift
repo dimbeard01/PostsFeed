@@ -10,8 +10,9 @@ import UIKit
 
 final class PostsViewModel {
     var onReloadData: (() -> Void)?
+    private let requestPostService = RequestsPostService()
     
-    var posts: [RequestUserPostModel] = []
+    var posts: [PostViewModel] = []
     
     func runEvent(_ event: Event) {
         switch event {
@@ -23,11 +24,11 @@ final class PostsViewModel {
     }
     
     private func fetchPosts(){
-        RequestsPostService.shared.fetchData { [weak self] (data) in
+        requestPostService.fetchData { [weak self] (data) in
             guard let data = data else { return }
             
-            let model = PostModel(model: data)
-            self?.posts = model.postModel
+            let model = FeedViewModel(model: data)
+            self?.posts = model.postModels
             
             self?.onReloadData?()
         }

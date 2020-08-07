@@ -18,16 +18,16 @@ final class PostsTableViewController: UIViewController {
     
     private let viewModel: PostsViewModel
     
-      private lazy var tableView: UITableView = {
-         let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.register(PostTableViewCell.self, forCellReuseIdentifier: PostTableViewCell.id)
-         tableView.dataSource = self
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.register(PostTableViewCell.self, forCellReuseIdentifier: String(describing: PostTableViewCell.self))
+        tableView.dataSource = self
         tableView.delegate = self
-         tableView.backgroundColor = .clear
-         tableView.showsVerticalScrollIndicator = false
-        tableView.separatorInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-         return tableView
-     }()
+        tableView.backgroundColor = .clear
+        tableView.showsVerticalScrollIndicator = false
+        tableView.separatorInset = .zero
+        return tableView
+    }()
     
     init(viewModel: PostsViewModel) {
         self.viewModel = viewModel
@@ -40,10 +40,12 @@ final class PostsTableViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.addSubview(tableView)
+        
         tableView.frame = view.frame
-        viewModel.runEvent(.viewDidLoad)
         setupViewModel()
+        viewModel.runEvent(.viewDidLoad)
     }
     
     private func setupViewModel() {
@@ -52,6 +54,10 @@ final class PostsTableViewController: UIViewController {
                 self.tableView.reloadData()
             }
         }
+//
+//        viewModel.onsetupViews = {
+//            self.setupViews()
+//        }
     }
 }
 
@@ -59,43 +65,19 @@ extension PostsTableViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.posts.count
     }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: PostTableViewCell.id, for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
-        guard let text = viewModel.posts[indexPath.row].stats.views.count else {return UITableViewCell()}
-        
     
-        let a = getLikes(value: text)
-        let s = getImage(model: viewModel, index: indexPath.row)
-        cell.configure(text: s)
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableViewCell.self), for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
+        cell.configueNew(viewModel: viewModel, index: indexPath.row)
+        
         return cell
     }
-    
-    func getLikes(value: Int) -> String {
-        if value > 1000 {
-            return "\(value/1000) K"
-        } else if value > 1000000{
-         return "\(value/1000000) M"
-        } else {
-            return "\(value)"
-        }
-        
-    }
-    
-    func getImage(model: PostsViewModel, index: Int) -> String {
-           var imageURL = String()
-           model.posts[index].contents.forEach { (item) in
-               guard let image = item.data.small else { return }
-               imageURL = image.url
-           }
-           return imageURL
-       }
-  }
-
+}
 
 extension PostsTableViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UIScreen.main.bounds.width
+        return UITableView.automaticDimension
     }
-
+    
+    
 }

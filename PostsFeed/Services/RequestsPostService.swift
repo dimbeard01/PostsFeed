@@ -6,14 +6,12 @@
 //  Copyright © 2020 Dima. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 
 final class RequestsPostService {
-    
-    static let shared = RequestsPostService()
-
-    func fetchData(completion: @escaping (RequestModel?) -> Void) {
+        
+    func fetchData(completion: @escaping ([PostViewModel]?) -> Void) {
         guard let url = URL(string: "http://stage.apianon.ru:3000/fs-posts/v1/posts") else { return }
         
         URLSession.shared.dataTask(with: url) { (data, response, error) in
@@ -29,30 +27,35 @@ final class RequestsPostService {
             
             guard let data = data else { return completion(nil) }
             
-            if let requestModel = try? JSONDecoder().decode(RequestModel.self, from: data) {
-                completion(requestModel)
+            if let requestModel = try? JSONDecoder().decode(Post.self, from: data) {
+                let userPostsModel = requestModel.data.items.map { PostViewModel(model: $0) }
+                completion(userPostsModel)
             } else {
                 completion(nil)
             }
         }.resume()
     }
     
-    func getImage(model: RequestModel, index: Int) -> String {
-        var imageURL = String()
-        model.data.items[index].contents.forEach { (item) in
-            guard let image = item.data.small else { return }
-            imageURL = image.url
-        }
-        return imageURL
+    func fetchImage(with model: PostsViewModel, index: Int, completion: @escaping (UIImage?) -> Void) {
+        guard let imageURL = model.posts[index].imageURLString else { return }
+        
+        guard let url = URL(string: imageURL) else { return }
+        
+        URLSession.shared.dataTask(with: url) { (data, response, error) in
+            if let error = error {
+                print(error)
+                return
+            }
+            
+            #if DEBUG
+            print(response.debugDescription)
+            #endif
+            
+            if let data = data, let image = UIImage(data: data) {
+                completion(image)
+            } else {
+                completion(nil)
+            }
+        }.resume()
     }
-    
-    func getText(model: RequestModel, index: Int) -> String {
-        var userText = String()
-        model.data.items[index].contents.forEach { (item) in
-            guard let text = item.data.value else { return }
-            userText = text
-        }
-        return userText
-    }
-
 }

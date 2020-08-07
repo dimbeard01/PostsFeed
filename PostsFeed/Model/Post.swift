@@ -8,7 +8,7 @@
 
 import UIKit
 
-struct RequestModel: Decodable {
+struct Post: Decodable {
     var data: RequestPostsModel
 }
 
