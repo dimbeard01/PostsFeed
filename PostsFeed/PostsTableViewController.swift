@@ -10,8 +10,9 @@ import UIKit
 
 enum Event {
     case viewDidLoad
-    case showPost
+    case showPost(PostViewModel)
     case reloadData
+    case next(String?)
 }
 
 final class PostsTableViewController: UIViewController {
@@ -21,12 +22,21 @@ final class PostsTableViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: String(describing: PostTableViewCell.self))
+        tableView.register(PostTableTextViewCell.self, forCellReuseIdentifier: String(describing: PostTableTextViewCell.self))
         tableView.dataSource = self
         tableView.delegate = self
         tableView.backgroundColor = .clear
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorInset = .zero
         return tableView
+    }()
+    
+    private let activityIndicator: UIActivityIndicatorView = {
+        let activity = UIActivityIndicatorView()
+        activity.style = .large
+        activity.color = .black
+        activity.hidesWhenStopped = true
+        return activity
     }()
     
     init(viewModel: PostsViewModel) {
@@ -41,23 +51,50 @@ final class PostsTableViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.addSubview(tableView)
+        view.backgroundColor = .white
+        navigationItem.title = "Posts Feed"
         
+        view.addSubview(activityIndicator)
+        activityIndicator.frame = CGRect(x: view.center.x - 50, y: view.center.y - 50, width: 100, height: 100)
+        
+        view.addSubview(tableView)
         tableView.frame = view.frame
+        
         setupViewModel()
         viewModel.runEvent(.viewDidLoad)
+        
+    }
+    
+    private func showLoader() {
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoader() {
+        activityIndicator.stopAnimating()
     }
     
     private func setupViewModel() {
+        
+        viewModel.onShowLoader = { [unowned self] in
+            DispatchQueue.main.async {
+                self.showLoader()
+            }
+        }
+        
         viewModel.onReloadData = { [unowned self] in
             DispatchQueue.main.async {
                 self.tableView.reloadData()
+                self.hideLoader()
             }
         }
-//
-//        viewModel.onsetupViews = {
-//            self.setupViews()
-//        }
+        
+        viewModel.onShowPost = { [unowned self] (viewModel) in
+            self.navigationController?.pushViewController(DetailPostViewController(viewModel: viewModel), animated: true)
+        }
+        
+        //        viewModel.onsetupViews = {
+        //            self.setupViews()
+        //        }
     }
 }
 
@@ -67,10 +104,21 @@ extension PostsTableViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableViewCell.self), for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
-        cell.configueNew(viewModel: viewModel, index: indexPath.row)
         
-        return cell
+        switch viewModel.posts[indexPath.row].imageURLString {
+        case nil:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableTextViewCell.self), for: indexPath) as? PostTableTextViewCell else {return UITableViewCell()}
+            cell.configueNew(viewModel: viewModel.posts[indexPath.row])
+            
+            return cell
+            
+        default:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableViewCell.self), for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
+            cell.configueNew(viewModel: viewModel.posts[indexPath.row])
+            
+            return cell
+        }
+        
     }
 }
 
@@ -79,5 +127,13 @@ extension PostsTableViewController: UITableViewDelegate {
         return UITableView.automaticDimension
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        viewModel.runEvent(.showPost(viewModel.posts[indexPath.row]))
+    }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == 19 {
+            viewModel.runEvent(.next(nil))
+        }
+    }
 }

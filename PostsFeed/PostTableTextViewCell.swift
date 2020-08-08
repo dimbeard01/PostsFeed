@@ -1,27 +1,18 @@
 //
-//  PostTableViewCell.swift
+//  PostTableTextViewCell.swift
 //  PostsFeed
 //
-//  Created by Dima on 06.08.2020.
+//  Created by Dima on 08.08.2020.
 //  Copyright © 2020 Dima. All rights reserved.
 //
 
 import UIKit
 
-final class PostTableViewCell: UITableViewCell {
-    
-    private var customPostImage: CustomImageView = {
-        let image = CustomImageView()
-        image.backgroundColor = .white
-        image.contentMode = .scaleAspectFill
-        image.clipsToBounds = true
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
+final class PostTableTextViewCell: UITableViewCell {
     
     private let userTextLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 3
+        label.numberOfLines = 6
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
@@ -112,27 +103,24 @@ final class PostTableViewCell: UITableViewCell {
     }
     
     func configueNew(viewModel: PostViewModel) {
+        
         likesLabel.text = viewModel.likes.convertStatistics()
         viewsLabel.text = viewModel.views.convertStatistics()
         commentsLabel.text =  viewModel.comments.convertStatistics()
         userNameLabel.text = viewModel.userName
         userTextLabel.text = viewModel.userText
-        customPostImage.loadImage(with: viewModel)
     }
     
     private func setupViews() {
         
-        [userNameLabel, userTextLabel, customPostImage, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { contentView.addSubview($0) }
+        [userNameLabel, userTextLabel, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { contentView.addSubview($0) }
         
         let constraints = [
+            
             userNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             userNameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
             
-            customPostImage.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
-            customPostImage.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
-            customPostImage.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
-            
-            userTextLabel.topAnchor.constraint(equalTo: customPostImage.bottomAnchor, constant: 10),
+            userTextLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
             userTextLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
             userTextLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
             
@@ -159,11 +147,11 @@ final class PostTableViewCell: UITableViewCell {
             commentIcon.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             
             commentsLabel.leftAnchor.constraint(equalTo: commentIcon.rightAnchor, constant: 8),
-            commentsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
+            commentsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
         ]
         
         NSLayoutConstraint.activate(constraints)
-        
     }
 }
+
 

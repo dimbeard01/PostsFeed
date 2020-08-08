@@ -8,11 +8,12 @@
 
 import Foundation
 
-final class FeedViewModel {
+ struct FeedViewModel {
     let postModels: [PostViewModel]
 
     init(model: [PostViewModel]) {
         self.postModels = model
+        
     }
 }
 
@@ -33,8 +34,8 @@ struct PostViewModel {
         userText = getText(model: model)
     }
     
-    private func getImageURL(model: RequestUserPostModel) -> String {
-           var imageURL = String()
+    private func getImageURL(model: RequestUserPostModel) -> String? {
+        var imageURL: String?
      
            model.contents.forEach { (item) in
                guard let image = item.data.small else { return }
