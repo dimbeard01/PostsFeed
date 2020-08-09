@@ -9,17 +9,20 @@
 import UIKit
 
 final class DetailPostViewController: UIViewController {
-    private let viewModel: PostViewModel?
     
-    private lazy var scrollView: UIScrollView = {
+    // MARK: - Properties
+    
+    private let viewModel: Post?
+    
+    private let scrollView: UIScrollView = {
         let scroll = UIScrollView(frame: .zero)
-        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.disableAutoresizingMask()
         return scroll
     }()
     
-    private lazy var containerView: UIView = {
+    private let containerView: UIView = {
         let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.disableAutoresizingMask()
         return containerView
     }()
     
@@ -28,7 +31,7 @@ final class DetailPostViewController: UIViewController {
         image.backgroundColor = .white
         image.contentMode = .scaleAspectFill
         image.clipsToBounds = true
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -39,7 +42,7 @@ final class DetailPostViewController: UIViewController {
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
         label.lineBreakMode = .byTruncatingTail
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -48,7 +51,7 @@ final class DetailPostViewController: UIViewController {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "likes")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -57,7 +60,7 @@ final class DetailPostViewController: UIViewController {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "views")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -66,7 +69,7 @@ final class DetailPostViewController: UIViewController {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "comments")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -76,7 +79,7 @@ final class DetailPostViewController: UIViewController {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -86,7 +89,7 @@ final class DetailPostViewController: UIViewController {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -96,7 +99,7 @@ final class DetailPostViewController: UIViewController {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -106,13 +109,13 @@ final class DetailPostViewController: UIViewController {
         label.textColor = .black
         label.font = .systemFont(ofSize: 17, weight: .bold)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
-    // MARK: - Init
+    // MARK: - init
     
-    init(viewModel: PostViewModel) {
+    init(viewModel: Post) {
         self.viewModel = viewModel
         likesLabel.text = viewModel.likes.convertStatistics()
         viewsLabel.text = viewModel.views.convertStatistics()
@@ -135,6 +138,8 @@ final class DetailPostViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Layout
+    
     private func setupViews() {
         view.addSubview(scrollView)
         scrollView.addSubview(containerView)
@@ -153,47 +158,6 @@ final class DetailPostViewController: UIViewController {
         ]
         
         NSLayoutConstraint.activate(viewConstraints)
-
-        let emptyImageConstraints = [
-            userNameLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
-            userNameLabel.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
-            
-            userTextLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
-            userTextLabel.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
-            userTextLabel.rightAnchor.constraint(equalTo: containerView.rightAnchor, constant: -10),
-            
-            likeIcon.heightAnchor.constraint(equalToConstant: 24),
-            likeIcon.widthAnchor.constraint(equalToConstant: 24),
-            likeIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            likeIcon.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
-            likeIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            likesLabel.leftAnchor.constraint(equalTo: likeIcon.rightAnchor, constant: 8),
-            likesLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            likesLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            viewIcon.heightAnchor.constraint(equalToConstant: 24),
-            viewIcon.widthAnchor.constraint(equalToConstant: 24),
-            viewIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            viewIcon.leftAnchor.constraint(equalTo: likesLabel.rightAnchor, constant: 30),
-            viewIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            viewsLabel.leftAnchor.constraint(equalTo: viewIcon.rightAnchor, constant: 8),
-            viewsLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            viewsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            commentIcon.heightAnchor.constraint(equalToConstant: 24),
-            commentIcon.widthAnchor.constraint(equalToConstant: 24),
-            commentIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            commentIcon.leftAnchor.constraint(equalTo: viewsLabel.rightAnchor, constant: 30),
-            commentIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            commentsLabel.leftAnchor.constraint(equalTo: commentIcon.rightAnchor, constant: 8),
-            commentsLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
-            commentsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
-        ]
-        
-        
         
         if let customPostImage = customPostImage {
             [userNameLabel, userTextLabel, customPostImage, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { containerView.addSubview($0) }
@@ -240,14 +204,52 @@ final class DetailPostViewController: UIViewController {
                 commentsLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
                 commentsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
             ]
+            
             NSLayoutConstraint.activate(constraints)
         } else {
             [userNameLabel, userTextLabel, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { containerView.addSubview($0) }
             
-            NSLayoutConstraint.activate(emptyImageConstraints)
+            let emptyImageConstraints = [
+                userNameLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+                userNameLabel.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
+                
+                userTextLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
+                userTextLabel.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
+                userTextLabel.rightAnchor.constraint(equalTo: containerView.rightAnchor, constant: -10),
+                
+                likeIcon.heightAnchor.constraint(equalToConstant: 24),
+                likeIcon.widthAnchor.constraint(equalToConstant: 24),
+                likeIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                likeIcon.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
+                likeIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+                
+                likesLabel.leftAnchor.constraint(equalTo: likeIcon.rightAnchor, constant: 8),
+                likesLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                likesLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+                
+                viewIcon.heightAnchor.constraint(equalToConstant: 24),
+                viewIcon.widthAnchor.constraint(equalToConstant: 24),
+                viewIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                viewIcon.leftAnchor.constraint(equalTo: likesLabel.rightAnchor, constant: 30),
+                viewIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+                
+                viewsLabel.leftAnchor.constraint(equalTo: viewIcon.rightAnchor, constant: 8),
+                viewsLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                viewsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+                
+                commentIcon.heightAnchor.constraint(equalToConstant: 24),
+                commentIcon.widthAnchor.constraint(equalToConstant: 24),
+                commentIcon.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                commentIcon.leftAnchor.constraint(equalTo: viewsLabel.rightAnchor, constant: 30),
+                commentIcon.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+                
+                commentsLabel.leftAnchor.constraint(equalTo: commentIcon.rightAnchor, constant: 8),
+                commentsLabel.topAnchor.constraint(equalTo: userTextLabel.bottomAnchor, constant: 10),
+                commentsLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
+            ]
             
+            NSLayoutConstraint.activate(emptyImageConstraints)
         }
-        
     }
 }
 

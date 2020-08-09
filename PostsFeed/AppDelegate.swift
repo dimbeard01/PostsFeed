@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         window = UIWindow(frame: UIScreen.main.bounds)
         let viewModel = PostsViewModel()
-        window?.rootViewController = UINavigationController(rootViewController: PostsTableViewController(viewModel: viewModel))
+        window?.rootViewController = UINavigationController(rootViewController: PostsViewController(viewModel: viewModel))
         window?.makeKeyAndVisible()
         return true
     }

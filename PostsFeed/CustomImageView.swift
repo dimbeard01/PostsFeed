@@ -12,7 +12,7 @@ let imageCache = NSCache<NSString, UIImage>()
 
 final class CustomImageView: UIImageView {
     
-    func loadImage(with model: PostViewModel) {
+    func loadImage(with model: Post) {
         guard let imageURL = model.imageURLString else { return }
         
         if let imageFromCache = imageCache.object(forKey: imageURL as NSString) {
@@ -41,9 +41,9 @@ final class CustomImageView: UIImageView {
                 return
             }
             
-//            #if DEBUG
-//            print(response.debugDescription)
-//            #endif
+            #if DEBUG
+            print(response.debugDescription)
+            #endif
             
             if let data = data, let image = UIImage(data: data) {
                 completion(image)

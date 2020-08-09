@@ -1,5 +1,5 @@
 //
-//  PostModel.swift
+//  PostsFeed.swift
 //  PostsFeed
 //
 //  Created by Dima on 06.08.2020.
@@ -8,16 +8,15 @@
 
 import Foundation
 
- struct FeedViewModel {
-    let postModels: [PostViewModel]
+ struct PostsFeed {
+    let postModels: [Post]
 
-    init(model: [PostViewModel]) {
+    init(model: [Post]) {
         self.postModels = model
-        
     }
 }
 
-struct PostViewModel {
+struct Post {
     let userName: String
     let likes: Int
     let views: Int
@@ -25,7 +24,7 @@ struct PostViewModel {
     var imageURLString: String? = nil
     var userText: String? = nil
     
-    init(model: RequestUserPostModel) {
+    init(model: UserPostModel) {
         userName = model.author?.name ?? "unknown"
         likes = model.stats.likes.count ?? 0
         views = model.stats.views.count ?? 0
@@ -34,7 +33,7 @@ struct PostViewModel {
         userText = getText(model: model)
     }
     
-    private func getImageURL(model: RequestUserPostModel) -> String? {
+    private func getImageURL(model: UserPostModel) -> String? {
         var imageURL: String?
      
            model.contents.forEach { (item) in
@@ -44,7 +43,7 @@ struct PostViewModel {
            return imageURL
        }
     
-    private func getText(model: RequestUserPostModel) -> String {
+    private func getText(model: UserPostModel) -> String {
          var userText = String()
          model.contents.forEach { (item) in
              guard let text = item.data.value else { return }

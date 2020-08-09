@@ -1,23 +1,34 @@
 //
-//  PostTableTextViewCell.swift
+//  PostTableViewCell.swift
 //  PostsFeed
 //
-//  Created by Dima on 08.08.2020.
+//  Created by Dima on 06.08.2020.
 //  Copyright © 2020 Dima. All rights reserved.
 //
 
 import UIKit
 
-final class PostTableTextViewCell: UITableViewCell {
+final class PostTableViewCell: UITableViewCell {
+    
+    // MARK: - Properties
+    
+    private var customPostImage: CustomImageView = {
+        let image = CustomImageView()
+        image.backgroundColor = .white
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
+        image.disableAutoresizingMask()
+        return image
+    }()
     
     private let userTextLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 6
+        label.numberOfLines = 3
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
         label.lineBreakMode = .byTruncatingTail
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -26,7 +37,7 @@ final class PostTableTextViewCell: UITableViewCell {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "likes")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -35,7 +46,7 @@ final class PostTableTextViewCell: UITableViewCell {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "views")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -44,7 +55,7 @@ final class PostTableTextViewCell: UITableViewCell {
         image.backgroundColor = .clear
         image.contentMode = .scaleToFill
         image.image = UIImage(named: "comments")
-        image.translatesAutoresizingMaskIntoConstraints = false
+        image.disableAutoresizingMask()
         return image
     }()
     
@@ -54,7 +65,7 @@ final class PostTableTextViewCell: UITableViewCell {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -64,7 +75,7 @@ final class PostTableTextViewCell: UITableViewCell {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -74,7 +85,7 @@ final class PostTableTextViewCell: UITableViewCell {
         label.textColor = .black
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -84,7 +95,7 @@ final class PostTableTextViewCell: UITableViewCell {
         label.textColor = .black
         label.font = .systemFont(ofSize: 17, weight: .bold)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.disableAutoresizingMask()
         return label
     }()
     
@@ -102,25 +113,31 @@ final class PostTableTextViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configueNew(viewModel: PostViewModel) {
-        
+    // MARK: - Helpers
+    
+    func configueNew(viewModel: Post) {
         likesLabel.text = viewModel.likes.convertStatistics()
         viewsLabel.text = viewModel.views.convertStatistics()
         commentsLabel.text =  viewModel.comments.convertStatistics()
         userNameLabel.text = viewModel.userName
         userTextLabel.text = viewModel.userText
+        customPostImage.loadImage(with: viewModel)
     }
     
+    // MARK: - Layout
+    
     private func setupViews() {
-        
-        [userNameLabel, userTextLabel, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { contentView.addSubview($0) }
+        [userNameLabel, userTextLabel, customPostImage, likeIcon, likesLabel, viewIcon, viewsLabel, commentIcon, commentsLabel].forEach { contentView.addSubview($0) }
         
         let constraints = [
-            
             userNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             userNameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
             
-            userTextLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
+            customPostImage.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
+            customPostImage.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
+            customPostImage.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
+            
+            userTextLabel.topAnchor.constraint(equalTo: customPostImage.bottomAnchor, constant: 10),
             userTextLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
             userTextLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
             
@@ -147,11 +164,10 @@ final class PostTableTextViewCell: UITableViewCell {
             commentIcon.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             
             commentsLabel.leftAnchor.constraint(equalTo: commentIcon.rightAnchor, constant: 8),
-            commentsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            commentsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
         ]
         
         NSLayoutConstraint.activate(constraints)
     }
 }
-
 

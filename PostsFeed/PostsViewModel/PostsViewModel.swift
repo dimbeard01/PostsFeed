@@ -10,14 +10,15 @@ import UIKit
 
 final class PostsViewModel {
     var onReloadData: (() -> Void)?
-    var onShowLoader: (() -> Void)?
-    var onShowPost: ((PostViewModel) -> Void)?
-    var onLoadNext: (() -> Void)?
-
+    var onSetupViews: (() -> Void)?
+    var onShowLoaderIndicator: (() -> Void)?
+    var onShowPost: ((Post) -> Void)?
+    var onLoadNextPage: (() -> Void)?
+    var onShowFootLoaderIndicator: (() -> Void)?
+    
     private let requestPostService = RequestsPostService()
     
-    var posts: [PostViewModel] = []
-    var cursor: String?
+    var posts: [Post] = []
     
     func runEvent(_ event: Event) {
         switch event {
@@ -25,37 +26,37 @@ final class PostsViewModel {
             fetchPosts()
         case .showPost(let viewModel):
             showPosts(viewModel: viewModel)
-        case .next(let str):
-            loadNextPage(str: str)
+        case .loadNextPage:
+            onShowFootLoaderIndicator?()
+            loadNextPage()
         default:
             print("showPost")
         }
     }
     
     private func fetchPosts() {
-        onShowLoader?()
-        requestPostService.fetchData { [weak self] (data, cursor) in
+        onShowLoaderIndicator?()
+        onSetupViews?()
+        
+        requestPostService.fetchData { [weak self] (data) in
             guard let data = data else { return }
             
-            let model = FeedViewModel(model: data)
+            let model = PostsFeed(model: data)
             self?.posts = model.postModels
-            self?.cursor = cursor
             self?.onReloadData?()
         }
     }
     
-    private func showPosts(viewModel: PostViewModel) {
+    private func showPosts(viewModel: Post) {
         onShowPost?(viewModel)
     }
     
-    private func loadNextPage(str: String?) {
-        requestPostService.fetchNextPageImagesURL(cursor: str) { [weak self] (data) in
+    private func loadNextPage() {
+        requestPostService.fetchNextPageImagesURL { [weak self] (data) in
             guard let data = data else { return }
-            
-            let model = FeedViewModel(model: data)
-            self?.posts.append(contentsOf: model.postModels)
-            
-            self?.onReloadData?()
+            let model = PostsFeed(model: data)
+            self?.posts += model.postModels
+            self?.onLoadNextPage?()
         }
     }
 }
