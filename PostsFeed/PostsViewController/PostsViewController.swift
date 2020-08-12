@@ -25,6 +25,7 @@ final class PostsViewController: UIViewController {
     // MARK: - Properties
     
     private let viewModel: PostsViewModel
+    private var typeSort: SortPostBy?
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -130,11 +131,11 @@ final class PostsViewController: UIViewController {
     private func sortViewModel(type: SortPostBy) -> [Post] {
         switch type {
         case .popular:
-            return viewModel.posts.sorted(by: { $0.views > $1.views })
+            return viewModel.posts.sorted { $0.views > $1.views }
         case .commented:
-            return viewModel.posts.sorted(by: { $0.comments > $1.comments })
+            return viewModel.posts.sorted { $0.comments > $1.comments }
         case .createdAt:
-            return viewModel.posts.sorted(by: { $0.likes > $1.likes })
+            return viewModel.posts.sorted { $0.createdAt > $1.createdAt }
         }
     }
     
@@ -175,9 +176,9 @@ final class PostsViewController: UIViewController {
             self?.tableView.reloadData()
         }
         
-        let createdAtAction = UIAlertAction(title: "created at", style: .default) { [weak self] (_) in
-            self?.viewModel.posts = self?.sortViewModel(type: .createdAt) ?? []
-            self?.tableView.reloadData()
+        let createdAtAction = UIAlertAction(title: "created at", style: .default) { [unowned self] (_) in
+            self.viewModel.posts = self.sortViewModel(type: .createdAt)
+            self.tableView.reloadData()
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -204,13 +205,14 @@ extension PostsViewController: UITableViewDataSource {
         switch viewModel.posts[indexPath.row].imageURLString {
         case nil:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableTextViewCell.self), for: indexPath) as? PostTableTextViewCell else {return UITableViewCell()}
-            cell.configueNew(viewModel: viewModel.posts[indexPath.row])
+            
+            cell.configure(viewModel: viewModel.posts[indexPath.row])
             
             return cell
             
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableViewCell.self), for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
-            cell.configueNew(viewModel: viewModel.posts[indexPath.row])
+            cell.configure(viewModel: viewModel.posts[indexPath.row])
             
             return cell
         }
@@ -228,6 +230,10 @@ extension PostsViewController: UITableViewDelegate {
         viewModel.runEvent(.showPost(viewModel.posts[indexPath.row]))
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = PostsHeaderTableView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: .infinity))
+        return header
+    }
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == (viewModel.posts.count - 1) {
             viewModel.runEvent(.loadNextPage)

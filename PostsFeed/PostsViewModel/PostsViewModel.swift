@@ -29,8 +29,6 @@ final class PostsViewModel {
         case .loadNextPage:
             onShowFootLoaderIndicator?()
             loadNextPage()
-        default:
-            print("showPost")
         }
     }
     

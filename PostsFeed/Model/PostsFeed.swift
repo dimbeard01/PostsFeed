@@ -21,6 +21,7 @@ struct Post {
     let likes: Int
     let views: Int
     let comments: Int
+    let createdAt: Int
     var imageURLString: String? = nil
     var userText: String? = nil
     
@@ -29,6 +30,7 @@ struct Post {
         likes = model.stats.likes.count ?? 0
         views = model.stats.views.count ?? 0
         comments = model.stats.comments.count ?? 0
+        createdAt = model.createdAt
         imageURLString = getImageURL(model: model)
         userText = getText(model: model)
     }

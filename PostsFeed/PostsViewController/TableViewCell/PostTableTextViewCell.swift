@@ -106,7 +106,7 @@ final class PostTableTextViewCell: UITableViewCell {
     
     // MARK: - Helpers
     
-    func configueNew(viewModel: Post) {
+    func configure(viewModel: Post) {
         likesLabel.text = viewModel.likes.convertStatistics()
         viewsLabel.text = viewModel.views.convertStatistics()
         commentsLabel.text =  viewModel.comments.convertStatistics()

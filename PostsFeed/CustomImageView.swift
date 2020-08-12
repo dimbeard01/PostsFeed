@@ -41,9 +41,9 @@ final class CustomImageView: UIImageView {
                 return
             }
             
-            #if DEBUG
-            print(response.debugDescription)
-            #endif
+//            #if DEBUG
+//            print(response.debugDescription)
+//            #endif
             
             if let data = data, let image = UIImage(data: data) {
                 completion(image)
