@@ -115,29 +115,13 @@ final class PostTableViewCell: UITableViewCell {
     
     // MARK: - Helpers
     
-    func configure(viewModel: Post) {
-        print(convertedDate(with: viewModel.createdAt))
+    func configure(with viewModel: Post) {
         likesLabel.text = viewModel.likes.convertStatistics()
         viewsLabel.text = viewModel.views.convertStatistics()
         commentsLabel.text =  viewModel.comments.convertStatistics()
         userNameLabel.text = viewModel.userName
         userTextLabel.text = viewModel.userText
         customPostImage.loadImage(with: viewModel)
-    }
-    
-    func convertedDate(with date: Int) -> String? {
-   let d = date / 1000
-    let timeResult = Date(timeIntervalSince1970: Double(d))
-    let dateFormatter = DateFormatter()
-    let dayWasOnline = dateFormatter.calendar.component(.day, from: timeResult)
-    let monthWasOnline = dateFormatter.calendar.component(.month, from: timeResult)
-    let yearWasOnline = dateFormatter.calendar.component(.year, from: timeResult)
-        let hourWasOnline = dateFormatter.calendar.component(.hour, from: timeResult)
-        let minuteWasOnline = dateFormatter.calendar.component(.minute, from: timeResult)
-    
-        dateFormatter.dateFormat = "dd-MM-yyyy hh:mm"
-        return "\(dayWasOnline) \(monthWasOnline) \(yearWasOnline) \(hourWasOnline):\(minuteWasOnline))"
-        
     }
     
     // MARK: - Layout

@@ -9,12 +9,14 @@
 import UIKit
 
 final class PostsViewModel {
-    var onReloadData: (() -> Void)?
     var onSetupViews: (() -> Void)?
+    var onReloadData: (() -> Void)?
     var onShowLoaderIndicator: (() -> Void)?
+    var onHideLoaderIndicator: (() -> Void)?
     var onShowPost: ((Post) -> Void)?
-    var onLoadNextPage: (() -> Void)?
     var onShowFootLoaderIndicator: (() -> Void)?
+    var onHideFootLoaderIndicator: (() -> Void)?
+    var onScrollToTop: (() -> Void)?
     
     private let requestPostService = RequestsPostService()
     
@@ -25,10 +27,12 @@ final class PostsViewModel {
         case .viewDidLoad:
             fetchPosts()
         case .showPost(let viewModel):
-            showPosts(viewModel: viewModel)
+            showPosts(with: viewModel)
         case .loadNextPage:
-            onShowFootLoaderIndicator?()
             loadNextPage()
+            onHideFootLoaderIndicator?()
+        case .sortBy(let type):
+            sortPosts(by: type)
         }
     }
     
@@ -42,19 +46,34 @@ final class PostsViewModel {
             let model = PostsFeed(model: data)
             self?.posts = model.postModels
             self?.onReloadData?()
+            self?.onHideLoaderIndicator?()
         }
     }
     
-    private func showPosts(viewModel: Post) {
+    private func showPosts(with viewModel: Post) {
         onShowPost?(viewModel)
     }
     
     private func loadNextPage() {
-        requestPostService.fetchNextPageImagesURL { [weak self] (data) in
+        onShowFootLoaderIndicator?()
+
+        requestPostService.fetchNextPage { [weak self] (data) in
             guard let data = data else { return }
+
             let model = PostsFeed(model: data)
             self?.posts += model.postModels
-            self?.onLoadNextPage?()
+            self?.onReloadData?()
+        }
+    }
+    
+    private func sortPosts(by type: SortPostBy) {
+        requestPostService.fetchSortData(type: type) { [weak self] (data) in
+            guard let data = data else { return }
+            
+            let model = PostsFeed(model: data)
+            self?.posts = model.postModels
+            self?.onReloadData?()
+            self?.onScrollToTop?()
         }
     }
 }

@@ -12,12 +12,13 @@ enum Event {
     case viewDidLoad
     case showPost(Post)
     case loadNextPage
+    case sortBy(SortPostBy)
 }
 
-enum SortPostBy {
-    case popular
-    case commented
-    case createdAt
+enum SortPostBy: String {
+    case popular = "mostPopular"
+    case commented = "mostCommented"
+    case createdAt = "createdAt"
 }
 
 final class PostsViewController: UIViewController {
@@ -26,7 +27,8 @@ final class PostsViewController: UIViewController {
     
     private let viewModel: PostsViewModel
     private var typeSort: SortPostBy?
-    
+    private let headerView = PostsHeaderTableView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: .infinity))
+
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: String(describing: PostTableViewCell.self))
@@ -37,13 +39,14 @@ final class PostsViewController: UIViewController {
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorInset = .zero
         tableView.tableFooterView = self.footLoaderIndicator
+        tableView.sectionHeaderHeight = 50
         tableView.disableAutoresizingMask()
         return tableView
     }()
     
     private let footLoaderIndicator: UIActivityIndicatorView = {
         let activity = UIActivityIndicatorView()
-        activity.style = .medium
+        activity.style = .large
         activity.color = .black
         activity.hidesWhenStopped = true
         return activity
@@ -51,17 +54,11 @@ final class PostsViewController: UIViewController {
     
     private let loaderIndicator: UIActivityIndicatorView = {
         let activity = UIActivityIndicatorView()
-        activity.style = .large
+        activity.style = .medium
         activity.color = .black
         activity.hidesWhenStopped = true
         activity.disableAutoresizingMask()
         return activity
-    }()
-    
-    private lazy var filterNavigationBarButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(image: UIImage(named: "filter"), style: .plain, target: self, action: #selector(filterButtonHandler))
-        button.tintColor = .black
-        return button
     }()
     
     // MARK: - Init
@@ -82,13 +79,19 @@ final class PostsViewController: UIViewController {
         
         view.backgroundColor = .white
         navigationItem.title = "Posts Feed"
-        navigationItem.rightBarButtonItem = filterNavigationBarButton
         
+        setupHeaderView()
         setupViewModel()
         viewModel.runEvent(.viewDidLoad)
     }
     
     // MARK: - Helpers
+    
+    private func setupHeaderView() {
+        headerView.onSortButtonPressed = { [unowned self] (type) in
+            self.viewModel.runEvent(.sortBy(type))
+        }
+    }
     
     private func setupViewModel() {
         viewModel.onSetupViews = { [unowned self] in
@@ -101,10 +104,22 @@ final class PostsViewController: UIViewController {
             }
         }
         
+        viewModel.onHideLoaderIndicator = { [unowned self] in
+            DispatchQueue.main.async {
+                self.loaderIndicator.stopAnimating()
+            }
+        }
+        
         viewModel.onReloadData = { [unowned self] in
             DispatchQueue.main.async {
                 self.tableView.reloadData()
-                self.loaderIndicator.stopAnimating()
+            }
+        }
+        
+        viewModel.onScrollToTop = { [unowned self] in
+            DispatchQueue.main.async {
+                let startIndex = IndexPath.init(row: 0, section: 0)
+                self.tableView.scrollToRow(at: startIndex, at: .top, animated: true)
             }
         }
         
@@ -115,27 +130,15 @@ final class PostsViewController: UIViewController {
             }
         }
         
-        viewModel.onLoadNextPage = { [unowned self] in
+        viewModel.onHideFootLoaderIndicator = { [unowned self] in
             DispatchQueue.main.async {
-                self.tableView.reloadData()
+                self.tableView.tableFooterView?.isHidden = true
                 self.footLoaderIndicator.stopAnimating()
             }
         }
         
         viewModel.onShowPost = { [unowned self] (viewModel) in
             self.navigationController?.pushViewController(DetailPostViewController(viewModel: viewModel), animated: true)
-        }
-    }
-    
-    //Incorrect sort
-    private func sortViewModel(type: SortPostBy) -> [Post] {
-        switch type {
-        case .popular:
-            return viewModel.posts.sorted { $0.views > $1.views }
-        case .commented:
-            return viewModel.posts.sorted { $0.comments > $1.comments }
-        case .createdAt:
-            return viewModel.posts.sorted { $0.createdAt > $1.createdAt }
         }
     }
     
@@ -160,37 +163,6 @@ final class PostsViewController: UIViewController {
         
         NSLayoutConstraint.activate(constraints)
     }
-    
-    // MARK: - Action
-    
-    @objc private func filterButtonHandler() {
-        let alertController = UIAlertController(title: "Filter by", message: nil, preferredStyle: .alert)
-        
-        let popularAction = UIAlertAction(title: "most popular", style: .default) { [weak self] (_) in
-            self?.viewModel.posts = self?.sortViewModel(type: .popular) ?? []
-            self?.tableView.reloadData()
-        }
-        
-        let commentedAction = UIAlertAction(title: "most commented", style: .default) { [weak self] (_) in
-            self?.viewModel.posts = self?.sortViewModel(type: .commented) ?? []
-            self?.tableView.reloadData()
-        }
-        
-        let createdAtAction = UIAlertAction(title: "created at", style: .default) { [unowned self] (_) in
-            self.viewModel.posts = self.sortViewModel(type: .createdAt)
-            self.tableView.reloadData()
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        
-        alertController.addAction(popularAction)
-        alertController.addAction(commentedAction)
-        alertController.addAction(createdAtAction)
-        alertController.addAction(cancelAction)
-        
-        present(alertController, animated: false, completion: nil)
-    }
-    
 }
 
     // MARK: - Table view data source
@@ -206,13 +178,13 @@ extension PostsViewController: UITableViewDataSource {
         case nil:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableTextViewCell.self), for: indexPath) as? PostTableTextViewCell else {return UITableViewCell()}
             
-            cell.configure(viewModel: viewModel.posts[indexPath.row])
+            cell.configure(with: viewModel.posts[indexPath.row])
             
             return cell
             
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PostTableViewCell.self), for: indexPath) as? PostTableViewCell else {return UITableViewCell()}
-            cell.configure(viewModel: viewModel.posts[indexPath.row])
+            cell.configure(with: viewModel.posts[indexPath.row])
             
             return cell
         }
@@ -231,9 +203,9 @@ extension PostsViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let header = PostsHeaderTableView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: .infinity))
-        return header
+        return headerView
     }
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == (viewModel.posts.count - 1) {
             viewModel.runEvent(.loadNextPage)

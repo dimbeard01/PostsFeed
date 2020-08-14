@@ -9,54 +9,67 @@
 import UIKit
 
 final class PostsHeaderTableView: UIView {
-    private let mostPopularLabel: UIButton = {
+    
+    // MARK: - Properties
+    
+    var onSortButtonPressed: ((SortPostBy) -> Void)?
+    
+    private let mostPopularButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = .lightGray
+        button.backgroundColor = .systemGray3
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .regular)
         button.setTitle("most popular", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        button.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleMostPopularButton), for: .touchUpInside)
         button.layer.cornerRadius = 14
         button.layer.masksToBounds = true
         button.disableAutoresizingMask()
         return button
     }()
     
-    private let mostCommentedLabel: UIButton = {
+    private let mostCommentedButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = .lightGray
+        button.backgroundColor = .systemGray3
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .regular)
         button.setTitle("most commented", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        button.addTarget(self, action: #selector(handleMostCommentedButton), for: .touchUpInside)
         button.layer.cornerRadius = 14
         button.layer.masksToBounds = true
         button.disableAutoresizingMask()
         return button
     }()
     
-    private let createdAtLabel: UIButton = {
+    private let createdAtButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = .lightGray
+        button.backgroundColor = .systemGray3
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .regular)
         button.setTitle("created at", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        button.addTarget(self, action: #selector(handleCreatedAtButon), for: .touchUpInside)
         button.layer.cornerRadius = 14
         button.layer.masksToBounds = true
         button.disableAutoresizingMask()
         return button
     }()
     
-    private let wrapperView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .lightGray
-        view.layer.cornerRadius = 12
-        view.layer.masksToBounds = true
-        view.disableAutoresizingMask()
-        return view
+    private let scrollView: UIScrollView = {
+        let scroll = UIScrollView(frame: .zero)
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.disableAutoresizingMask()
+        return scroll
     }()
+    
+    private let containerView: UIView = {
+        let containerView = UIView()
+        containerView.disableAutoresizingMask()
+        return containerView
+    }()
+    
+    // MARK: - init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -69,29 +82,99 @@ final class PostsHeaderTableView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc private func handleTap() {
-        mostPopularLabel.layer.borderWidth = 2
-        mostPopularLabel.layer.borderColor = UIColor.black.cgColor
+    // MARK: - Helpers
+    
+    private func handleSortButton(by type: SortPostBy) {
+        switch type {
+        case .popular:
+            mostPopularButton.layer.borderWidth = 2
+            mostPopularButton.layer.borderColor = UIColor.black.cgColor
+            
+            createdAtButton.layer.borderWidth = 0
+            mostCommentedButton.layer.borderWidth = 0
+            mostCommentedButton.isUserInteractionEnabled = true
+            createdAtButton.isUserInteractionEnabled = true
+            mostPopularButton.isUserInteractionEnabled = false
+            onSortButtonPressed?(.popular)
+            
+        case .commented:
+            mostCommentedButton.layer.borderWidth = 2
+            mostCommentedButton.layer.borderColor = UIColor.black.cgColor
+            
+            mostPopularButton.layer.borderWidth = 0
+            createdAtButton.layer.borderWidth = 0
+            mostPopularButton.isUserInteractionEnabled = true
+            createdAtButton.isUserInteractionEnabled = true
+            mostCommentedButton.isUserInteractionEnabled = false
+            onSortButtonPressed?(.commented)
+            
+        case .createdAt:
+            createdAtButton.layer.borderWidth = 2
+            createdAtButton.layer.borderColor = UIColor.black.cgColor
+            
+            mostPopularButton.layer.borderWidth = 0
+            mostCommentedButton.layer.borderWidth = 0
+            mostPopularButton.isUserInteractionEnabled = true
+            mostCommentedButton.isUserInteractionEnabled = true
+            createdAtButton.isUserInteractionEnabled = false
+            onSortButtonPressed?(.createdAt)
+        }
     }
     
+    // MARK: - Actions
+    
+    @objc private func handleMostPopularButton() {
+        handleSortButton(by: .popular)
+    }
+    
+    @objc private func handleMostCommentedButton() {
+        handleSortButton(by: .commented)
+    }
+    
+    @objc private func handleCreatedAtButon() {
+        handleSortButton(by: .createdAt)
+    }
+    
+    // MARK: - Layout
+    
     private func setupViews() {
-        addSubview(mostPopularLabel)
-        addSubview(mostCommentedLabel)
-        addSubview(createdAtLabel)
+        addSubview(scrollView)
+        scrollView.addSubview(containerView)
         
+        containerView.addSubview(mostPopularButton)
+        containerView.addSubview(mostCommentedButton)
+        containerView.addSubview(createdAtButton)
         
         let constraints = [
-            mostPopularLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10),
-            mostPopularLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
+            scrollView.topAnchor.constraint(equalTo: self.topAnchor),
+            scrollView.leftAnchor.constraint(equalTo: self.leftAnchor),
+            scrollView.rightAnchor.constraint(equalTo: self.rightAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            mostCommentedLabel.leftAnchor.constraint(equalTo: mostPopularLabel.rightAnchor, constant: 10),
-            mostCommentedLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
-            
-            createdAtLabel.leftAnchor.constraint(equalTo: mostCommentedLabel.rightAnchor, constant: 10),
-            createdAtLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
-            createdAtLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -10)
+            containerView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            containerView.leftAnchor.constraint(equalTo: scrollView.leftAnchor),
+            containerView.rightAnchor.constraint(equalTo: scrollView.rightAnchor),
+            containerView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            containerView.heightAnchor.constraint(equalToConstant: 50)
         ]
         
         NSLayoutConstraint.activate(constraints)
+        
+        let containerViewsConstraints = [
+            mostPopularButton.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 10),
+            mostPopularButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            mostPopularButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            
+            mostCommentedButton.leftAnchor.constraint(equalTo: mostPopularButton.rightAnchor, constant: 10),
+            mostCommentedButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            mostCommentedButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            
+            createdAtButton.leftAnchor.constraint(equalTo: mostCommentedButton.rightAnchor, constant: 10),
+            createdAtButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            createdAtButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            createdAtButton.rightAnchor.constraint(equalTo: containerView.rightAnchor, constant: -10)
+        ]
+        
+        NSLayoutConstraint.activate(containerViewsConstraints)
     }
 }
